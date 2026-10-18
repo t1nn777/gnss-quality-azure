@@ -72,7 +72,7 @@ flowchart LR
 5. **Simulator** – a ~2 km route on real streets near E-Town, 364 Cong Hoa, Tan Binh, Ho Chi Minh City
    (Cong Hoa → Hoang Hoa Tham → Truong Chinh; road geometry from OpenStreetMap), driven at ~10 m/s, 1 Hz,
    Gaussian noise ~4 m, multipath jumps of 80–180 m. The trace is simulated, only the road shape is real.
-   The default ODD is a corridor along Cong Hoa and Hoang Hoa Tham, so the trip exits it on Truong Chinh.
+   The demo ODD is a fixed corridor along Cong Hoa and Hoang Hoa Tham, so the trip exits it on Truong Chinh.
 
 CSV contract: input `timestamp,lat,lon` (ISO 8601, 1 Hz) → output adds `is_anomaly,smooth_lat,smooth_lon,in_odd`.
 Extra columns (e.g. `true_lat,true_lon`) are passed through.
@@ -99,7 +99,27 @@ cd api && uvicorn main:app --reload --port 8000      # docs at http://localhost:
 streamlit run ui/app.py                               # http://localhost:8501, uses API_URL=http://localhost:8000
 ```
 
+### Using the app: trip CSV and ODD GeoJSON
+
+The two inputs are separate files:
+
+- **Trip** (CSV): positions recorded by the vehicle, `timestamp,lat,lon` at 1 Hz. One file per trip.
+- **ODD** (GeoJSON Polygon/MultiPolygon, a Feature or FeatureCollection, coordinates `[lon, lat]`): the area the
+  vehicle is allowed to drive in, defined by the operator. Draw one at [geojson.io](https://geojson.io) and save it as GeoJSON.
+
+In the UI sidebar: *Upload CSV* for the trip, then *ODD → Upload GeoJSON* (or *Demo ODD*, or *None*).
+Example files in [`samples/`](samples/): `trip_tan_binh_simulated.csv` (simulated) and `odd_cong_hoa_only.geojson`
+(a smaller ODD than the demo one, so the same trip is about 40% inside instead of 80%).
+
+From the command line (`curl.exe` on Windows):
+
+```bash
+curl -F "file=@samples/trip_tan_binh_simulated.csv" -F "polygon=<samples/odd_cong_hoa_only.geojson" http://localhost:8000/trace/odd-check
+```
+
 ### API
+
+The root URL redirects to the Swagger UI at `/docs`.
 
 | Method | Path | Input | Output |
 |---|---|---|---|
@@ -109,7 +129,7 @@ streamlit run ui/app.py                               # http://localhost:8501, u
 | POST | `/trace/anomalies` | CSV file, `max_kmh` | flagged points with implied speed |
 | POST | `/trace/smooth` | CSV file | cleaned CSV download |
 | POST | `/trace/odd-check` | CSV file, form `polygon` (GeoJSON, `[lon, lat]`) | % inside, enter/exit events |
-| POST | `/trace/clean` | CSV file, optional `polygon` or `use_default_odd=true` | `{"summary": …, "points": […]}` |
+| POST | `/trace/clean` | CSV file, optional `polygon` (wins) or `use_default_odd=true` | `{"summary": …, "points": […]}` |
 
 Bad input (missing columns, non-ISO timestamps, invalid lat/lon or polygon) returns **422** with a clear message.
 

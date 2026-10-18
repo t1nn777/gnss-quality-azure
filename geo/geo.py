@@ -26,9 +26,11 @@ REQUIRED_COLUMNS = ("timestamp", "lat", "lon")
 OUTPUT_COLUMNS = REQUIRED_COLUMNS + ("is_anomaly", "smooth_lat", "smooth_lon", "in_odd")
 TRUTH_COLUMNS = ("true_lat", "true_lon")
 
-# Demo ODD polygon in local metres (x east, y north) relative to the trip start.
-# A ~45 m corridor along Cong Hoa and Hoang Hoa Tham that ends partway down
-# Truong Chinh, so the simulated route in generate_trace exits it once (~80% inside).
+# Demo ODD polygon in local metres (x east, y north) around DEMO_ODD_ANCHOR, the start
+# of the simulated route (Cong Hoa, Tan Binh, HCMC). A ~45 m corridor along Cong Hoa and
+# Hoang Hoa Tham that ends partway down Truong Chinh, so the simulated trip exits it once
+# (~80% inside). It is fixed in place: uploaded traces elsewhere are simply outside it.
+DEMO_ODD_ANCHOR = (10.802419, 106.640461)
 DEMO_ODD_LOCAL_M = np.array(
     [[-30, -40], [-20, 50], [820, -25], [805, -95], [750, -740], [495, -605], [540, -525], [670, -595],
      [715, -105]],
@@ -221,8 +223,8 @@ def parse_polygon(polygon: Any) -> Polygon | MultiPolygon:
     return geom
 
 
-def default_odd_polygon(lat0: float, lon0: float) -> dict:
-    """Demo ODD polygon anchored at (lat0, lon0), as a GeoJSON Polygon dict."""
+def default_odd_polygon(lat0: float = DEMO_ODD_ANCHOR[0], lon0: float = DEMO_ODD_ANCHOR[1]) -> dict:
+    """Demo ODD polygon as a GeoJSON Polygon dict (fixed in Tan Binh unless re-anchored)."""
     plat, plon = from_local_xy(DEMO_ODD_LOCAL_M[:, 0], DEMO_ODD_LOCAL_M[:, 1], lat0, lon0)
     ring = [[round(float(lo), 7), round(float(la), 7)] for la, lo in zip(plat, plon)]
     ring.append(ring[0])

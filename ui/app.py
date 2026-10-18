@@ -29,11 +29,14 @@ def fetch_sample(seed: int, noise_m: float, n_jumps: int) -> bytes:
 
 
 @st.cache_data(show_spinner=False)
-def clean_trace(csv_bytes: bytes, max_kmh: float, use_default_odd: bool) -> tuple[int, dict]:
+def clean_trace(csv_bytes: bytes, max_kmh: float, use_default_odd: bool, polygon: str | None) -> tuple[int, dict]:
+    data = {"use_default_odd": str(use_default_odd).lower()}
+    if polygon:
+        data["polygon"] = polygon
     r = requests.post(
         f"{API_URL}/trace/clean",
         files={"file": ("trace.csv", csv_bytes, "text/csv")},
-        data={"use_default_odd": str(use_default_odd).lower()},
+        data=data,
         params={"max_kmh": max_kmh},
         timeout=TIMEOUT_S,
     )
@@ -73,15 +76,22 @@ with st.sidebar:
 
     st.header("Settings")
     max_kmh = st.number_input("Anomaly speed threshold (km/h)", min_value=10.0, max_value=2000.0, value=200.0, step=10.0)
-    use_odd = st.checkbox("Use default ODD polygon around the trace", value=True,
-                          help="Demo operational design domain anchored at the first point of the trace.")
+    odd_mode = st.radio("ODD (allowed area)", ["Demo ODD", "Upload GeoJSON", "None"], horizontal=True,
+                        help="Demo ODD: fixed corridor on Cong Hoa / Hoang Hoa Tham, Tan Binh, HCMC.")
+    odd_polygon = None
+    if odd_mode == "Upload GeoJSON":
+        odd_up = st.file_uploader("GeoJSON Polygon, coordinates [lon, lat]", type=["geojson", "json"])
+        st.caption("Draw one at [geojson.io](https://geojson.io) and save as GeoJSON.")
+        if odd_up is not None:
+            odd_polygon = odd_up.getvalue().decode("utf-8", errors="replace")
+    use_odd = odd_mode == "Demo ODD"
     st.caption(f"API: `{API_URL}`")
 
 # --------------------------------------------------------------------------- #
 # Main
 # --------------------------------------------------------------------------- #
 st.title("GNSS Trace Quality Checker")
-st.caption("Data is simulated for demonstration; not real vehicle data.")
+st.caption("Sample data is simulated for demonstration, not real vehicle data. Uploaded files are processed as they are.")
 
 csv_bytes = st.session_state.get("csv")
 if not csv_bytes:
@@ -90,7 +100,7 @@ if not csv_bytes:
 
 with st.spinner("Cleaning trace…"):
     try:
-        status, body = clean_trace(csv_bytes, max_kmh, use_odd)
+        status, body = clean_trace(csv_bytes, max_kmh, use_odd, odd_polygon)
     except requests.RequestException as exc:
         st.error(f"Could not reach the API at {API_URL}: {exc}")
         st.stop()
