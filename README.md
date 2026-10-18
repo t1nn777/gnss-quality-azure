@@ -65,9 +65,14 @@ flowchart LR
 2. **Anomalies** – implied speed between consecutive points > 200 km/h (configurable). A jump makes
    the step in *and* out too fast, so the point between them is flagged.
 3. **Kalman filter** – state `[x, y, vx, vy]`, constant velocity, dt = 1 s, R = (4 m)² I. The update is
-   skipped for flagged points and when the innovation Mahalanobis² > 16 (gating).
+   skipped for flagged points and when the innovation Mahalanobis² > 16 (gating). After 3 unflagged points
+   in a row fail the gate (a sharp turn the constant-velocity model cannot follow), the covariance is reset
+   and the point is used, so the filter re-anchors instead of drifting.
 4. **ODD check** – point-in-polygon (Shapely) on the smoothed track: % of time inside, enter/exit times.
-5. **Simulator** – waypoints at ~10 m/s, 1 Hz, Gaussian noise ~4 m, multipath jumps of 80–180 m.
+5. **Simulator** – a ~2 km route on real streets near E-Town, 364 Cong Hoa, Tan Binh, Ho Chi Minh City
+   (Cong Hoa → Hoang Hoa Tham → Truong Chinh; road geometry from OpenStreetMap), driven at ~10 m/s, 1 Hz,
+   Gaussian noise ~4 m, multipath jumps of 80–180 m. The trace is simulated, only the road shape is real.
+   The default ODD is a corridor along Cong Hoa and Hoang Hoa Tham, so the trip exits it on Truong Chinh.
 
 CSV contract: input `timestamp,lat,lon` (ISO 8601, 1 Hz) → output adds `is_anomaly,smooth_lat,smooth_lon,in_odd`.
 Extra columns (e.g. `true_lat,true_lon`) are passed through.

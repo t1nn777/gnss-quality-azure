@@ -35,7 +35,7 @@ def test_stats(sample_csv):
     r = client.post("/trace/stats", files=_upload(sample_csv))
     assert r.status_code == 200
     body = r.json()
-    assert body["points"] == 155
+    assert body["points"] == 200
     assert body["anomalies"] == 5
     assert body["median_err_smooth_m"] < body["median_err_raw_m"]
 

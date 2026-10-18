@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from geo import TraceError, clean_trace, default_odd_polygon, flag_anomalies, odd_check, trip_stats, validate_trace
-from geo.generate_trace import generate_trace
+from geo.generate_trace import LAT0, LON0, generate_trace
 
 
 @pytest.mark.parametrize("seed", [1, 2, 3, 4, 5])
@@ -23,6 +23,17 @@ def test_smoothing_reduces_median_error(seed):
     assert stats["median_err_smooth_m"] < stats["median_err_raw_m"]
 
 
+@pytest.mark.parametrize("seed", [1, 7, 42, 99])
+def test_kalman_recovers_after_sharp_turns(seed):
+    # The simulated route has ~90 degree turns; without gate recovery the filter drifts hundreds of metres.
+    out = clean_trace(generate_trace(seed))
+    err = np.hypot(
+        (out["smooth_lat"] - out["true_lat"]) * 110540.0,
+        (out["smooth_lon"] - out["true_lon"]) * 111320.0 * np.cos(np.radians(LAT0)),
+    )
+    assert err.max() < 60.0
+
+
 def test_odd_check_full_coverage_polygon_is_100_percent():
     df = generate_trace(1)
     pad = 0.01
@@ -35,7 +46,7 @@ def test_odd_check_full_coverage_polygon_is_100_percent():
 
 
 def test_clean_trace_output_contract_and_extras():
-    out = clean_trace(generate_trace(3), polygon=default_odd_polygon(10.7769, 106.7009))
+    out = clean_trace(generate_trace(3), polygon=default_odd_polygon(LAT0, LON0))
     assert list(out.columns[:7]) == ["timestamp", "lat", "lon", "is_anomaly", "smooth_lat", "smooth_lon", "in_odd"]
     assert {"true_lat", "true_lon"} <= set(out.columns)
     assert out["in_odd"].notna().all()
