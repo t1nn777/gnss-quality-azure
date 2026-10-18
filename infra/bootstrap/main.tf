@@ -17,6 +17,9 @@ terraform {
 provider "azurerm" {
   features {}
   subscription_id = var.subscription_id
+  # Do not auto-register dozens of resource providers (hangs on student subscriptions;
+  # CI only has Reader). The few this project needs are registered once, see README.
+  resource_provider_registrations = "none"
 }
 
 data "azurerm_client_config" "current" {}

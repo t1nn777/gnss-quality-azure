@@ -121,6 +121,12 @@ Constraints: Azure for Students, `southeastasia`, ≤ 4 vCPU per region, budget 
 ```bash
 az login
 az account set --subscription <subscription-id>
+# Register only the resource providers this project uses (the azurerm provider is set to
+# resource_provider_registrations = "none", because auto-registering ~70 of them hangs).
+for ns in Microsoft.Storage Microsoft.Web Microsoft.Insights Microsoft.OperationalInsights \
+          Microsoft.ManagedIdentity Microsoft.Databricks Microsoft.Compute Microsoft.Network; do
+  az provider register --namespace $ns
+done
 cd infra/bootstrap
 cp terraform.tfvars.example terraform.tfvars      # fill subscription_id
 terraform init && terraform apply
