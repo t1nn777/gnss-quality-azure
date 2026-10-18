@@ -1,0 +1,62 @@
+name: deploy-app
+
+on:
+  push:
+    branches: [main]
+    paths: ["api/**", "ui/**", "geo/**", ".github/workflows/deploy-app.yml"]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-app
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: test
+    # Skipped until the web apps exist (repository variables set after Phase 4).
+    if: vars.API_APP_NAME != '' && vars.UI_APP_NAME != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        component: [api, ui]
+    steps:
+      - uses: actions/checkout@v4
+
+      # The API imports the shared geo/ package; copy it next to main.py so
+      # App Service (Oryx build, startup in the app folder) can import it.
+      - name: Package ${{ matrix.component }}
+        run: |
+          mkdir -p dist
+          cp -r ${{ matrix.component }} dist/app
+          rm -rf dist/app/tests dist/app/requirements-dev.txt
+          if [ "${{ matrix.component }}" = "api" ]; then cp -r geo dist/app/geo; fi
+          find dist/app -name '__pycache__' -prune -exec rm -rf {} +
+          ls -R dist/app
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ matrix.component == 'api' && vars.API_APP_NAME || vars.UI_APP_NAME }}
+          package: dist/app
+
+      - name: Smoke test
+        if: matrix.component == 'api'
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS "https://${{ vars.API_APP_NAME }}.azurewebsites.net/health"; then exit 0; fi
+            sleep 10
+          done
+          echo "API did not become healthy" && exit 1
