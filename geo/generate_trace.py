@@ -13,10 +13,19 @@ import argparse
 import numpy as np
 import pandas as pd
 
-from geo.geo import from_local_xy
+from geo.geo import from_local_xy, to_local_xy
 
-LAT0, LON0 = 10.7769, 106.7009  # simulated start point (Ho Chi Minh City area)
-WAYPOINTS_M = np.array([[0, 0], [400, 0], [600, 150], [650, 450], [900, 600], [1200, 600]], dtype=float)
+# Simulated route on real streets around E-Town, 364 Cong Hoa, Tan Binh, Ho Chi Minh City:
+# Cong Hoa (east) -> Hoang Hoa Tham (south) -> Truong Chinh (west), ~2 km.
+# Road geometry from OpenStreetMap (ODbL) via OSRM; the trace itself is simulated.
+ROUTE_LATLON = np.array([
+    (10.802419, 106.640461),  # Cong Hoa, in front of E-Town
+    (10.801826, 106.647469),  # Cong Hoa x Hoang Hoa Tham
+    (10.796367, 106.646964),  # Hoang Hoa Tham x Truong Chinh
+    (10.799041, 106.641960),  # Truong Chinh
+])
+LAT0, LON0 = float(ROUTE_LATLON[0, 0]), float(ROUTE_LATLON[0, 1])
+WAYPOINTS_M = np.column_stack(to_local_xy(ROUTE_LATLON[:, 0], ROUTE_LATLON[:, 1], LAT0, LON0))
 TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 

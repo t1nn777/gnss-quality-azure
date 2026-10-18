@@ -27,9 +27,11 @@ OUTPUT_COLUMNS = REQUIRED_COLUMNS + ("is_anomaly", "smooth_lat", "smooth_lon", "
 TRUTH_COLUMNS = ("true_lat", "true_lon")
 
 # Demo ODD polygon in local metres (x east, y north) relative to the trip start.
-# Same shape as reference/demo.py; it matches the simulated route in generate_trace.
+# A ~45 m corridor along Cong Hoa and Hoang Hoa Tham that ends partway down
+# Truong Chinh, so the simulated route in generate_trace exits it once (~80% inside).
 DEMO_ODD_LOCAL_M = np.array(
-    [[-80, -80], [720, -80], [760, 520], [980, 520], [980, 700], [560, 700], [560, 250], [-80, 120]],
+    [[-30, -40], [-20, 50], [820, -25], [805, -95], [750, -740], [495, -605], [540, -525], [670, -595],
+     [715, -105]],
     dtype=float,
 )
 
@@ -141,11 +143,16 @@ def flag_anomalies(df: pd.DataFrame, max_kmh: float = 200.0) -> np.ndarray:
 # --------------------------------------------------------------------------- #
 # 2. Kalman filter (constant velocity) with gating
 # --------------------------------------------------------------------------- #
-def kalman_smooth(df: pd.DataFrame, flags=None, meas_sigma_m: float = 4.0, gate: float = 16.0) -> pd.DataFrame:
+def kalman_smooth(
+    df: pd.DataFrame, flags=None, meas_sigma_m: float = 4.0, gate: float = 16.0, max_gated: int = 3
+) -> pd.DataFrame:
     """Return a DataFrame with smooth_lat / smooth_lon (same index as df).
 
     State [x, y, vx, vy], dt = 1 s, R = (4 m)^2 I. The update step is skipped
     when the point is flagged or its innovation Mahalanobis^2 exceeds `gate`.
+    After `max_gated` consecutive unflagged points fail the gate, the model is
+    assumed wrong (e.g. a sharp turn, which a constant-velocity model cannot
+    follow), so the covariance is reset and the point is used again.
     """
     n = len(df)
     flags = np.zeros(n, dtype=bool) if flags is None else np.asarray(flags, dtype=bool)
@@ -159,15 +166,25 @@ def kalman_smooth(df: pd.DataFrame, flags=None, meas_sigma_m: float = 4.0, gate:
     Q = np.diag([0.5, 0.5, 1.0, 1.0])
     R = np.eye(2) * meas_sigma_m**2
     x = np.array([meas[0, 0], meas[0, 1], 0.0, 0.0])
-    P = np.diag([25.0, 25.0, 100.0, 100.0])
+    P0 = np.diag([25.0, 25.0, 100.0, 100.0])
+    P = P0.copy()
 
     smooth = np.zeros_like(meas)
+    gated_run = 0
     for k in range(n):
         x = F @ x
         P = F @ P @ F.T + Q
         y = meas[k] - H @ x
         S = H @ P @ H.T + R
-        if y @ np.linalg.solve(S, y) < gate and not flags[k]:  # gating
+        accept = not flags[k] and y @ np.linalg.solve(S, y) < gate  # gating
+        if not flags[k] and not accept:
+            gated_run += 1
+            if gated_run >= max_gated:  # filter lost track: re-anchor on the measurement
+                P = P0.copy()
+                S = H @ P @ H.T + R
+                accept = True
+        if accept:
+            gated_run = 0
             K = P @ H.T @ np.linalg.inv(S)
             x = x + K @ y
             P = (np.eye(4) - K @ H) @ P
