@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import io
 import json
+import logging
+import os
 import sys
 import time
 from pathlib import Path
@@ -20,12 +22,21 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 if (_REPO_ROOT / "geo").is_dir() and str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-import pandas as pd
-from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
-from fastapi.responses import Response
+# Must run before FastAPI is imported so the FastAPI instrumentation can patch it.
+if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
+    from azure.monitor.opentelemetry import configure_azure_monitor
 
-import geo
-from geo.generate_trace import generate_trace, to_csv_text
+    configure_azure_monitor()
+
+import pandas as pd  # noqa: E402
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile  # noqa: E402
+from fastapi.responses import Response  # noqa: E402
+
+import geo  # noqa: E402
+from geo.generate_trace import generate_trace, to_csv_text  # noqa: E402
+
+logger = logging.getLogger("gnss.api")
+logger.setLevel(logging.INFO)
 
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 CSV_DATE_FORMAT = "%Y-%m-%dT%H:%M:%S"
@@ -178,5 +189,12 @@ async def clean(
         res = geo.odd_check(out, poly)
         summary["odd_events"] = res["events"]
         summary["odd_start_inside"] = res["start_inside"]
-    summary["processing_ms"] = round((time.perf_counter() - t_start) * 1000, 1)
+
+    elapsed_ms = round((time.perf_counter() - t_start) * 1000, 1)
+    summary["processing_ms"] = elapsed_ms
+    logger.info(
+        "trace cleaned: %d points, %d anomalies, %.1f ms",
+        summary["points"], summary["anomalies"], elapsed_ms,
+        extra={"trip_points": summary["points"], "anomalies": summary["anomalies"], "processing_ms": elapsed_ms},
+    )
     return {"summary": summary, "points": _records(out)}
