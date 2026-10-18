@@ -1,0 +1,5 @@
+# Runtime dependencies for the UI (Azure App Service, Python 3.12)
+streamlit==1.41.1
+pydeck==0.9.1
+pandas==2.2.3
+requests==2.32.3
