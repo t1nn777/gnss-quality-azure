@@ -45,3 +45,7 @@ Thumbs.db
 
 # Local tooling
 .claude/
+
+# Personal AI working notes (kept local)
+CLAUDE.md
+PROMPTS.md
