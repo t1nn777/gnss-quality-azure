@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Secrets / local config
+.env
+.env.*
+*.pem
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+*.tfvars
+!*.tfvars.example
+backend.hcl
+override.tf
+override.tf.json
+*_override.tf
+
+# Databricks
+.databricks/
+
+# Generated simulated data
+data/*
+!data/.gitkeep
+sample.csv
+input_trace.csv
+output_trace.csv
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local tooling
+.claude/
