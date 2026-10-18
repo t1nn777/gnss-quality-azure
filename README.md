@@ -208,12 +208,38 @@ Notebook order: `00_setup` → `01_bronze` → `02_silver` → `03_gold` (all id
 `groupBy("trip_id").applyInPandas(...)`; no algorithm code is copied into notebooks.
 Dashboard queries: [`databricks/dashboard.sql`](databricks/dashboard.sql).
 
-Tear down at the end of the day:
+### 6. Turn it off and on again (one command)
 
-```bash
-cd infra/databricks && terraform destroy
-cd infra/app && terraform destroy          # only if you do not need the demo
+Stopping a web app does not save money: the B1 plan is billed every hour it exists. To stop all costs,
+destroy the stacks; the bootstrap state storage (a few cents per month) stays so everything can be rebuilt.
+
+```powershell
+.\scripts\down.ps1              # terraform destroy infra/databricks, then infra/app
+.\scripts\up.ps1                # terraform apply infra/app, then infra/databricks, update GitHub, deploy code
 ```
+
+Both run locally with `az login` (as subscription Owner, like the first apply) and `gh auth login`.
+They need the git-ignored `backend.hcl` and `terraform.tfvars` from steps 2 and 5.
+
+| Option | Does |
+|---|---|
+| `-Only app` / `-Only databricks` | one stack only (e.g. `down.ps1 -Only databricks` keeps the web demo) |
+| `-AutoApprove` | skip Terraform's `yes` prompt |
+| `-SkipGitHub` | do not touch GitHub secrets/variables (and, for `up.ps1`, do not start deploys) |
+| `-SkipDeploy` | `up.ps1` only: update GitHub but do not start `deploy-app.yml` / `deploy-databricks.yml` |
+
+What happens to GitHub:
+
+- `down.ps1` removes the variables that gate the workflows (`API_APP_NAME`, `UI_APP_NAME`,
+  `TFSTATE_STORAGE_ACCOUNT`, `DATABRICKS_HOST`, `DATABRICKS_CLUSTER_ID`), so pushes to `main` skip
+  deploys instead of failing against deleted resources.
+- `up.ps1` writes them back. The recreated GitHub identity has a **new client ID** and the web apps a new
+  random suffix (**new URLs**), so it also updates `AZURE_CLIENT_ID` and passes the new ID to
+  infra/databricks. Then it starts both deploy workflows on `main`.
+- A new Databricks workspace starts empty: redo the catalog/volume/upload part of step 5 and check
+  `DATABRICKS_CATALOG` before running the job.
+
+If a script stops halfway, fix the cause and run it again; Terraform picks up where it left off.
 
 ### Observability
 
