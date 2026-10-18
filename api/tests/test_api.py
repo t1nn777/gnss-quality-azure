@@ -1,5 +1,6 @@
 import io
 import json
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -9,6 +10,7 @@ from api.main import app
 from geo.generate_trace import generate_trace, to_csv_text
 
 client = TestClient(app)
+SAMPLES = Path(__file__).resolve().parents[2] / "samples"
 
 
 def _upload(csv_text: str):
@@ -22,6 +24,12 @@ def sample_csv() -> str:
 
 def test_health():
     assert client.get("/health").json() == {"status": "ok"}
+
+
+def test_root_redirects_to_docs():
+    r = client.get("/", follow_redirects=False)
+    assert r.status_code in (302, 307)
+    assert r.headers["location"] == "/docs"
 
 
 def test_sample_returns_simulated_csv():
@@ -73,6 +81,27 @@ def test_clean_with_default_odd(sample_csv):
     assert body["summary"]["odd_polygon"]["type"] == "Polygon"
     assert len(body["points"]) == body["summary"]["points"]
     assert {"is_anomaly", "smooth_lat", "smooth_lon", "in_odd", "true_lat"} <= set(body["points"][0])
+
+
+def test_default_odd_is_fixed_in_place(sample_csv):
+    # A trace elsewhere must not drag the demo ODD along with its first point.
+    df = pd.read_csv(io.StringIO(sample_csv))
+    moved = df.assign(lat=df.lat + 0.05, lon=df.lon + 0.05)
+    home = client.post("/trace/clean", files=_upload(sample_csv), data={"use_default_odd": "true"}).json()["summary"]
+    away = client.post("/trace/clean", files=_upload(to_csv_text(moved)), data={"use_default_odd": "true"}).json()["summary"]
+    assert away["odd_polygon"] == home["odd_polygon"]
+    assert away["pct_in_odd"] == 0.0
+
+
+def test_clean_with_uploaded_sample_files():
+    csv_text = (SAMPLES / "trip_tan_binh_simulated.csv").read_text(encoding="utf-8")
+    polygon = (SAMPLES / "odd_cong_hoa_only.geojson").read_text(encoding="utf-8")
+    r = client.post("/trace/clean", files=_upload(csv_text), data={"polygon": polygon, "use_default_odd": "true"})
+    assert r.status_code == 200
+    summary = r.json()["summary"]
+    assert summary["odd_polygon"]["type"] == "Polygon"  # uploaded FeatureCollection, normalised; it wins over the default
+    assert 0 < summary["pct_in_odd"] < 100
+    assert [e["type"] for e in summary["odd_events"]] == ["exit"]
 
 
 def test_clean_without_odd_has_null_in_odd(sample_csv):

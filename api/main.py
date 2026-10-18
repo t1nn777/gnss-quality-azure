@@ -30,7 +30,8 @@ if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
 
 import pandas as pd  # noqa: E402
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile  # noqa: E402
-from fastapi.responses import Response  # noqa: E402
+from fastapi.responses import RedirectResponse, Response  # noqa: E402
+from shapely.geometry import mapping  # noqa: E402
 
 import geo  # noqa: E402
 from geo.generate_trace import generate_trace, to_csv_text  # noqa: E402
@@ -80,10 +81,11 @@ def _parse_polygon_field(polygon: str | None):
     if polygon is None or not polygon.strip():
         return None
     try:
-        geo.parse_polygon(polygon)
+        geom = geo.parse_polygon(polygon)
     except geo.TraceError as exc:
         raise HTTPException(422, str(exc)) from exc
-    return json.loads(polygon)
+    # Feature / FeatureCollection uploads (e.g. from geojson.io) come back as a plain geometry.
+    return json.loads(json.dumps(mapping(geom)))
 
 
 def _records(df: pd.DataFrame) -> list[dict]:
@@ -102,6 +104,11 @@ def _csv_response(df: pd.DataFrame, filename: str) -> Response:
 # --------------------------------------------------------------------------- #
 # Endpoints
 # --------------------------------------------------------------------------- #
+@app.get("/", include_in_schema=False)
+def root() -> RedirectResponse:
+    return RedirectResponse("/docs")
+
+
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
@@ -171,7 +178,7 @@ async def odd_check(
 async def clean(
     file: UploadFile = File(...),
     polygon: str | None = Form(None, description="Optional GeoJSON ODD polygon, coordinates [lon, lat]"),
-    use_default_odd: bool = Form(False, description="Use the demo ODD polygon anchored at the first point"),
+    use_default_odd: bool = Form(False, description="Use the demo ODD polygon (fixed corridor on Cong Hoa, Tan Binh)"),
     max_kmh: float = MaxKmh,
 ) -> dict:
     """Everything the UI needs: summary + per-point output."""
@@ -179,7 +186,7 @@ async def clean(
     df = await _read_trace(file)
     poly = _parse_polygon_field(polygon)
     if poly is None and use_default_odd:
-        poly = geo.default_odd_polygon(float(df["lat"].iloc[0]), float(df["lon"].iloc[0]))
+        poly = geo.default_odd_polygon()
 
     out = _clean(df, polygon=poly, max_kmh=max_kmh)
     summary = geo.trip_stats(out)

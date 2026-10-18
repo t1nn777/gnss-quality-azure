@@ -1,0 +1,42 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Example ODD: Cong Hoa only (Tan Binh, HCMC)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              106.640187,
+              10.802057
+            ],
+            [
+              106.640278,
+              10.802871
+            ],
+            [
+              106.64796,
+              10.802193
+            ],
+            [
+              106.647823,
+              10.80156
+            ],
+            [
+              106.647,
+              10.801469
+            ],
+            [
+              106.640187,
+              10.802057
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
