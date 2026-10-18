@@ -1,0 +1,71 @@
+# Databricks Asset Bundle: syncs the shared geo/ package + notebooks and defines
+# the "gnss_quality" job (00 -> 01 -> 02 -> 03) on the existing single-node cluster.
+#
+#   export DATABRICKS_HOST=https://adb-xxxx.azuredatabricks.net   # terraform output workspace_url
+#   databricks bundle validate -t dev --var="cluster_id=..." --var="run_as_user=you@example.com" --var="catalog=..."
+#   databricks bundle deploy   -t dev  (same --var flags, or BUNDLE_VAR_<name> env vars)
+#   databricks bundle run gnss_quality -t dev
+bundle:
+  name: gnss_quality
+
+sync:
+  paths:
+    - ../geo
+    - ./notebooks
+
+variables:
+  cluster_id:
+    description: Existing single-node cluster id (terraform output cluster_id in infra/databricks)
+  catalog:
+    description: Unity Catalog catalog that holds the gnss schema
+    default: main
+  run_as_user:
+    description: Your Databricks user; the single-user cluster belongs to it
+
+resources:
+  jobs:
+    gnss_quality:
+      name: gnss_quality
+      description: Bronze -> Silver -> Gold quality pipeline on simulated GNSS trips.
+      max_concurrent_runs: 1
+      run_as:
+        user_name: ${var.run_as_user}
+      tags:
+        project: gnss-quality-azure
+        data: simulated
+      tasks:
+        - task_key: setup
+          existing_cluster_id: ${var.cluster_id}
+          notebook_task:
+            notebook_path: ./notebooks/00_setup.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: bronze
+          depends_on: [{ task_key: setup }]
+          existing_cluster_id: ${var.cluster_id}
+          notebook_task:
+            notebook_path: ./notebooks/01_bronze.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: silver
+          depends_on: [{ task_key: bronze }]
+          existing_cluster_id: ${var.cluster_id}
+          notebook_task:
+            notebook_path: ./notebooks/02_silver.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: gold
+          depends_on: [{ task_key: silver }]
+          existing_cluster_id: ${var.cluster_id}
+          notebook_task:
+            notebook_path: ./notebooks/03_gold.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+targets:
+  dev:
+    default: true
+    # Host comes from DATABRICKS_HOST (CI) or your CLI profile (local).
