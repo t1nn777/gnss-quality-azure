@@ -1,0 +1,47 @@
+name: deploy-databricks
+
+on:
+  push:
+    branches: [main]
+    paths: ["databricks/**", "geo/**", ".github/workflows/deploy-databricks.yml"]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-databricks
+  cancel-in-progress: false
+
+jobs:
+  bundle:
+    # Skipped until the workspace exists (repository variable set after Phase 7).
+    if: vars.DATABRICKS_HOST != ''
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: databricks
+    env:
+      # GitHub OIDC -> Azure (azure/login) -> Databricks via the Azure CLI token.
+      DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }}
+      DATABRICKS_AUTH_TYPE: azure-cli
+      BUNDLE_VAR_cluster_id: ${{ vars.DATABRICKS_CLUSTER_ID }}
+      BUNDLE_VAR_catalog: ${{ vars.DATABRICKS_CATALOG }}
+      BUNDLE_VAR_run_as_user: ${{ vars.DATABRICKS_RUN_AS_USER }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: databricks/setup-cli@v1.19.0
+
+      - name: bundle validate
+        run: databricks bundle validate -t dev
+
+      - name: bundle deploy
+        run: databricks bundle deploy -t dev
