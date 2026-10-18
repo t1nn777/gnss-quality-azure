@@ -121,6 +121,12 @@ Constraints: Azure for Students, `southeastasia`, ≤ 4 vCPU per region, budget 
 ```bash
 az login
 az account set --subscription <subscription-id>
+# Register only the resource providers this project uses (the azurerm provider is set to
+# resource_provider_registrations = "none", because auto-registering ~70 of them hangs).
+for ns in Microsoft.Storage Microsoft.Web Microsoft.Insights Microsoft.OperationalInsights \
+          Microsoft.ManagedIdentity Microsoft.Databricks Microsoft.Compute Microsoft.Network; do
+  az provider register --namespace $ns
+done
 cd infra/bootstrap
 cp terraform.tfvars.example terraform.tfvars      # fill subscription_id
 terraform init && terraform apply
@@ -132,7 +138,7 @@ terraform output storage_account_id                # -> tfstate_storage_account_
 
 ```bash
 cd infra/app
-cp terraform.tfvars.example terraform.tfvars      # subscription_id, github_owner, github_repo, tfstate_storage_account_id
+cp terraform.tfvars.example terraform.tfvars      # subscription_id, github_owner(_id), github_repo(_id), tfstate_storage_account_id
 cp backend.hcl.example backend.hcl                 # values from step 1
 terraform init -backend-config=backend.hcl
 terraform apply
@@ -173,6 +179,10 @@ Settings → Secrets and variables → Actions. The secrets are identifiers, not
 All Azure logins use `azure/login@v2` with OIDC (`permissions: id-token: write`). Terraform jobs share a
 concurrency group so two applies never run at once. Federated credential subjects:
 `repo:<owner>/<repo>:ref:refs/heads/main` and `repo:<owner>/<repo>:pull_request`.
+Repos with immutable OIDC subjects (check `gh api repos/<owner>/<repo>/actions/oidc/customization/sub`)
+send `repo:<owner>@<owner_id>/<repo>@<repo_id>:...` instead; set `github_owner_id` and `github_repo_id`
+in `infra/app/terraform.tfvars` (CI passes them from the `github` context). Otherwise login fails with
+`AADSTS700213: No matching federated identity record`.
 
 ### 5. Databricks
 

@@ -24,6 +24,18 @@ variable "github_repo" {
   type        = string
 }
 
+variable "github_owner_id" {
+  description = "Numeric GitHub owner ID (gh api repos/OWNER/REPO --jq .owner.id). Empty = classic OIDC subject."
+  type        = string
+  default     = ""
+}
+
+variable "github_repo_id" {
+  description = "Numeric GitHub repository ID (gh api repos/OWNER/REPO --jq .id). Empty = classic OIDC subject."
+  type        = string
+  default     = ""
+}
+
 variable "tfstate_storage_account_id" {
   description = "Resource ID of the Terraform state storage account (output storage_account_id of infra/bootstrap)."
   type        = string
