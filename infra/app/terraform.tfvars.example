@@ -2,4 +2,6 @@
 subscription_id            = "00000000-0000-0000-0000-000000000000"
 github_owner               = "your-github-user"
 github_repo                = "gnss-quality-azure"
+github_owner_id            = "" # gh api repos/OWNER/REPO --jq .owner.id (needed if the repo uses immutable OIDC subjects)
+github_repo_id             = "" # gh api repos/OWNER/REPO --jq .id
 tfstate_storage_account_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-gnss-tfstate/providers/Microsoft.Storage/storageAccounts/stgnsstfxxxxxx"

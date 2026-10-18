@@ -8,6 +8,11 @@ resource "random_string" "suffix" {
 
 locals {
   name = "${var.prefix}-${random_string.suffix.result}"
+
+  # Repos with immutable OIDC subjects send repo:OWNER@OWNER_ID/REPO@REPO_ID:...
+  github_subject_prefix = (var.github_owner_id != "" && var.github_repo_id != ""
+    ? "repo:${var.github_owner}@${var.github_owner_id}/${var.github_repo}@${var.github_repo_id}"
+  : "repo:${var.github_owner}/${var.github_repo}")
 }
 
 resource "azurerm_resource_group" "app" {
@@ -120,7 +125,7 @@ resource "azurerm_federated_identity_credential" "main" {
   parent_id           = azurerm_user_assigned_identity.github.id
   audience            = ["api://AzureADTokenExchange"]
   issuer              = "https://token.actions.githubusercontent.com"
-  subject             = "repo:${var.github_owner}/${var.github_repo}:ref:refs/heads/main"
+  subject             = "${local.github_subject_prefix}:ref:refs/heads/main"
 }
 
 resource "azurerm_federated_identity_credential" "pull_request" {
@@ -129,7 +134,7 @@ resource "azurerm_federated_identity_credential" "pull_request" {
   parent_id           = azurerm_user_assigned_identity.github.id
   audience            = ["api://AzureADTokenExchange"]
   issuer              = "https://token.actions.githubusercontent.com"
-  subject             = "repo:${var.github_owner}/${var.github_repo}:pull_request"
+  subject             = "${local.github_subject_prefix}:pull_request"
 }
 
 # Deploy + terraform apply inside the app resource group.

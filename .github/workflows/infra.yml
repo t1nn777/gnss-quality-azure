@@ -26,6 +26,8 @@ env:
   TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   TF_VAR_github_owner: ${{ github.repository_owner }}
   TF_VAR_github_repo: ${{ github.event.repository.name }}
+  TF_VAR_github_owner_id: ${{ github.repository_owner_id }}
+  TF_VAR_github_repo_id: ${{ github.repository_id }}
   TF_VAR_tfstate_storage_account_id: /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.TFSTATE_RESOURCE_GROUP }}/providers/Microsoft.Storage/storageAccounts/${{ vars.TFSTATE_STORAGE_ACCOUNT }}
   TF_IN_AUTOMATION: "true"
   TF_INPUT: "false"
