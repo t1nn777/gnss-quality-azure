@@ -78,7 +78,9 @@ resource "azurerm_linux_web_app" "api" {
   app_settings = {
     SCM_DO_BUILD_DURING_DEPLOYMENT        = "true"
     APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.this.connection_string
-    OTEL_SERVICE_NAME                     = "gnss-api"
+    # Cold start (unpack Oryx output + import numpy/pandas/shapely) can exceed the 230 s default on B1.
+    WEBSITES_CONTAINER_START_TIME_LIMIT = "600"
+    OTEL_SERVICE_NAME                   = "gnss-api"
   }
 }
 
@@ -104,7 +106,9 @@ resource "azurerm_linux_web_app" "ui" {
   app_settings = {
     SCM_DO_BUILD_DURING_DEPLOYMENT        = "true"
     APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.this.connection_string
-    API_URL                               = "https://${azurerm_linux_web_app.api.default_hostname}"
+    # Cold start (unpack Oryx output + import numpy/pandas/shapely) can exceed the 230 s default on B1.
+    WEBSITES_CONTAINER_START_TIME_LIMIT = "600"
+    API_URL                             = "https://${azurerm_linux_web_app.api.default_hostname}"
   }
 }
 
