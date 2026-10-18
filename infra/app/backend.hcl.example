@@ -1,0 +1,5 @@
+# Copy to backend.hcl (git-ignored), values from the `backend_hcl` output of infra/bootstrap.
+#   terraform init -backend-config=backend.hcl
+resource_group_name  = "rg-gnss-tfstate"
+storage_account_name = "stgnsstfxxxxxx"
+container_name       = "tfstate"
