@@ -1,0 +1,181 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="gnss-arch" name="Architecture">
+    <mxGraphModel dx="1700" dy="960" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="960" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="&lt;b&gt;GNSS Trace Quality Checker&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:13px&quot; color=&quot;#5A6570&quot;&gt;How a simulated GPS trace gets cleaned on Azure&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=top;fontSize=22;fontColor=#1F2933;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="520" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= GitHub ================= -->
+        <mxCell id="gh" value="GitHub" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;fillColor=#F6F8FA;strokeColor=#D0D7DE;verticalAlign=top;align=left;spacingLeft=14;spacingTop=8;fontStyle=1;fontSize=15;fontColor=#24292F;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="300" height="490" as="geometry"/>
+        </mxCell>
+        <mxCell id="dev" value="You" style="shape=umlActor;verticalLabelPosition=middle;labelPosition=right;align=left;verticalAlign=middle;spacingLeft=6;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#24292F;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="175" y="120" width="28" height="52" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo" value="&lt;b&gt;Repository&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A6570&quot;&gt;api/ · ui/ · databricks/ · infra/&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#8C959F;verticalAlign=top;spacingTop=8;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="70" y="205" width="240" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="geo" value="&lt;b&gt;geo/&lt;/b&gt;  one shared algorithm module" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#E3F4F1;strokeColor=#0E8A7E;strokeWidth=2;fontColor=#0B6B62;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="90" y="265" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="actions" value="&lt;b&gt;GitHub Actions&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;div style=&quot;text-align:left&quot;&gt;✓ &lt;b&gt;ci&lt;/b&gt; – tests on every PR&lt;br&gt;✓ &lt;b&gt;infra&lt;/b&gt; – Terraform plan / apply&lt;br&gt;✓ &lt;b&gt;deploy-app&lt;/b&gt; – ships API + UI&lt;br&gt;✓ &lt;b&gt;deploy-databricks&lt;/b&gt; – ships the job&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#8C959F;verticalAlign=top;spacingTop=10;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="70" y="375" width="240" height="185" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= Notes (why it looks like this) ================= -->
+        <mxCell id="n1" value="&lt;b&gt;Only ~4 vCPU allowed&lt;/b&gt;&lt;br&gt;so Databricks runs on a single node" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=14;fillColor=#FFF4C2;strokeColor=#D6B656;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="625" width="300" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="n2" value="&lt;b&gt;B1 plan, not free F1&lt;/b&gt;&lt;br&gt;Streamlit needs websockets" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=14;fillColor=#FFF4C2;strokeColor=#D6B656;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="705" width="300" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="n3" value="&lt;b&gt;Budget under 10 USD&lt;/b&gt;&lt;br&gt;down.ps1 removes it all, up.ps1 rebuilds it" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=14;fillColor=#FFF4C2;strokeColor=#D6B656;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="785" width="300" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="n4" value="&lt;b&gt;All data is simulated&lt;/b&gt;&lt;br&gt;ground truth kept to measure error" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=14;fillColor=#FFF4C2;strokeColor=#D6B656;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="865" width="300" height="64" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= Azure ================= -->
+        <mxCell id="az" value="Azure · Southeast Asia" style="rounded=1;arcSize=2;whiteSpace=wrap;html=1;fillColor=#F2F7FC;strokeColor=#0078D4;strokeWidth=1.5;verticalAlign=top;align=right;spacingRight=16;spacingTop=8;fontStyle=1;fontSize=15;fontColor=#0063B1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="100" width="1260" height="830" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="user" value="Demo user&lt;br&gt;&lt;font color=&quot;#5A6570&quot;&gt;(browser)&lt;/font&gt;" style="shape=umlActor;verticalLabelPosition=middle;labelPosition=right;align=left;verticalAlign=middle;spacingLeft=6;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#1F2933;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="774" y="22" width="28" height="52" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="mi" value="&lt;b&gt;Managed identity&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A6570&quot;&gt;id-gnss-github&lt;/font&gt;" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;verticalLabelPosition=bottom;verticalAlign=top;image=img/lib/azure2/identity/Managed_Identities.svg;" vertex="1" parent="1">
+          <mxGeometry x="452" y="555" width="56" height="56" as="geometry"/>
+        </mxCell>
+
+        <!-- rg-gnss-app -->
+        <mxCell id="rgapp" value="rg-gnss-app   &lt;font color=&quot;#5A6570&quot; style=&quot;font-weight:normal&quot;&gt;· identity: Contributor&lt;/font&gt;" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7FB2E5;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontStyle=1;fontSize=13;fontColor=#1F2933;" vertex="1" parent="1">
+          <mxGeometry x="560" y="140" width="1070" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="plan" value="App Service plan · B1 Linux" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#F7FAFD;strokeColor=#A9C7E8;verticalAlign=bottom;align=right;spacingRight=10;spacingBottom=6;fontSize=11;fontColor=#5A6570;" vertex="1" parent="1">
+          <mxGeometry x="680" y="180" width="540" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="ui" value="&lt;b&gt;Streamlit UI&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A6570&quot;&gt;Web App&lt;/font&gt;" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=13;verticalLabelPosition=bottom;verticalAlign=top;image=img/lib/azure2/app_services/App_Services.svg;" vertex="1" parent="1">
+          <mxGeometry x="760" y="215" width="56" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="api" value="&lt;b&gt;FastAPI&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A6570&quot;&gt;Web App&lt;/font&gt;" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=13;verticalLabelPosition=bottom;verticalAlign=top;image=img/lib/azure2/app_services/App_Services.svg;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="215" width="56" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="apigeo" value="geo/" style="rounded=1;arcSize=40;whiteSpace=wrap;html=1;fillColor=#E3F4F1;strokeColor=#0E8A7E;strokeWidth=2;fontColor=#0B6B62;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1104" y="215" width="44" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="appi" value="&lt;b&gt;Application Insights&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A6570&quot;&gt;+ Log Analytics&lt;/font&gt;" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=13;verticalLabelPosition=bottom;verticalAlign=top;image=img/lib/azure2/devops/Application_Insights.svg;" vertex="1" parent="1">
+          <mxGeometry x="1390" y="215" width="44" height="56" as="geometry"/>
+        </mxCell>
+
+        <!-- rg-gnss-databricks -->
+        <mxCell id="rgdbx" value="rg-gnss-databricks   &lt;font color=&quot;#5A6570&quot; style=&quot;font-weight:normal&quot;&gt;· identity: workspace admin&lt;/font&gt;" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7FB2E5;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontStyle=1;fontSize=13;fontColor=#1F2933;" vertex="1" parent="1">
+          <mxGeometry x="560" y="390" width="1070" height="300" as="geometry"/>
+        </mxCell>
+        <mxCell id="dbx" value="&lt;b&gt;Databricks&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A6570&quot;&gt;premium workspace&lt;/font&gt;" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=13;verticalLabelPosition=bottom;verticalAlign=top;image=img/lib/azure2/analytics/Azure_Databricks.svg;" vertex="1" parent="1">
+          <mxGeometry x="612" y="430" width="52" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="vm" value="&lt;b&gt;1-node cluster&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A6570&quot;&gt;4 vCPU · stops after 15 min&lt;/font&gt;" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=13;verticalLabelPosition=bottom;verticalAlign=top;image=img/lib/azure2/compute/Virtual_Machine.svg;" vertex="1" parent="1">
+          <mxGeometry x="610" y="570" width="56" height="52" as="geometry"/>
+        </mxCell>
+        <mxCell id="job" value="&lt;b&gt;Job gnss_quality&lt;/b&gt;   &lt;font color=&quot;#5A6570&quot;&gt;setup → bronze → silver → gold, deployed as an Asset Bundle&lt;/font&gt;" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#F3F6F9;strokeColor=#C3CDD7;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="820" y="425" width="770" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="raw" value="&lt;b&gt;Raw files&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;200 simulated trips&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#FFFFFF;strokeColor=#8C959F;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="820" y="485" width="120" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="bronze" value="&lt;b&gt;Bronze&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;raw points&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#F3DCC6;strokeColor=#A86B3C;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="982" y="485" width="120" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="silver" value="&lt;b&gt;Silver&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;cleaned by geo/&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#E8EBEF;strokeColor=#0E8A7E;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1144" y="485" width="120" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="gold" value="&lt;b&gt;Gold&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;quality per trip&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#FCEBB0;strokeColor=#B8921B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1306" y="485" width="120" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="dash" value="&lt;b&gt;Dashboard&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;which trips are usable?&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#8C959F;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1468" y="490" width="122" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="delta" value="Delta tables in Unity Catalog" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#5A6570;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="982" y="575" width="444" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- rg-gnss-tfstate -->
+        <mxCell id="rgtf" value="rg-gnss-tfstate   &lt;font color=&quot;#5A6570&quot; style=&quot;font-weight:normal&quot;&gt;· identity: blob read/write&lt;/font&gt;" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7FB2E5;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontStyle=1;fontSize=13;fontColor=#1F2933;" vertex="1" parent="1">
+          <mxGeometry x="560" y="740" width="420" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="st" value="&lt;b&gt;Terraform state&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5A6570&quot;&gt;created once from your laptop&lt;/font&gt;" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=13;verticalLabelPosition=bottom;verticalAlign=top;image=img/lib/azure2/storage/Storage_Accounts.svg;" vertex="1" parent="1">
+          <mxGeometry x="740" y="785" width="65" height="52" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= Edges ================= -->
+        <mxCell id="e1" value="push / PR" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#57606A;fontSize=11;fontColor=#57606A;labelBackgroundColor=#F6F8FA;" edge="1" parent="1" source="dev" target="repo">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" value="triggers" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#57606A;fontSize=11;fontColor=#57606A;labelBackgroundColor=#F6F8FA;" edge="1" parent="1" source="repo" target="actions">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" value="OIDC login&lt;br&gt;no passwords stored" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#0078D4;strokeWidth=2;fontSize=11;fontColor=#0063B1;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.85;exitDx=0;exitDy=0;" edge="1" parent="1" source="actions" target="mi">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="425" y="532"/><mxPoint x="425" y="583"/></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#0078D4;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="mi" target="rgapp">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="534" y="583"/><mxPoint x="534" y="250"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#0078D4;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="mi" target="rgdbx">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="534" y="583"/><mxPoint x="534" y="540"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#0078D4;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="mi" target="rgtf">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="534" y="583"/><mxPoint x="534" y="820"/></Array></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e7" value="opens the app" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#1F2933;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#F2F7FC;" edge="1" parent="1" source="user" target="ui">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e8" value="sends the trace" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#1F2933;strokeWidth=1.5;fontSize=11;fontColor=#1F2933;labelBackgroundColor=#F7FAFD;" edge="1" parent="1" source="ui" target="api">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e9" value="logs &amp;amp; timings" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#57606A;dashed=1;fontSize=11;fontColor=#57606A;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="api" target="appi">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e10" value="runs on" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#57606A;fontSize=11;fontColor=#57606A;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="job" target="vm">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="750" y="440"/><mxPoint x="750" y="596"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#57606A;strokeWidth=1.5;" edge="1" parent="1" source="raw" target="bronze">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#57606A;strokeWidth=1.5;" edge="1" parent="1" source="bronze" target="silver">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#57606A;strokeWidth=1.5;" edge="1" parent="1" source="silver" target="gold">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#57606A;strokeWidth=1.5;" edge="1" parent="1" source="gold" target="dash">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- geo/ is the same code in both places -->
+        <mxCell id="g1" value="same code" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#0E8A7E;strokeWidth=2;dashed=1;fontSize=11;fontStyle=1;fontColor=#0B6B62;labelBackgroundColor=#F2F7FC;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="geo" target="apigeo">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <Array as="points"><mxPoint x="365" y="277"/><mxPoint x="365" y="122"/><mxPoint x="1126" y="122"/></Array>
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="g2" value="same code" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#0E8A7E;strokeWidth=2;dashed=1;fontSize=11;fontStyle=1;fontColor=#0B6B62;labelBackgroundColor=#F2F7FC;exitX=1;exitY=0.7;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="geo" target="silver">
+          <mxGeometry x="0.4" relative="1" as="geometry">
+            <Array as="points"><mxPoint x="378" y="293"/><mxPoint x="378" y="715"/><mxPoint x="1204" y="715"/></Array>
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
