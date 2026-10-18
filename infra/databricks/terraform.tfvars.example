@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars (git-ignored) and fill in. No real values in git.
+subscription_id           = "00000000-0000-0000-0000-000000000000"
+user_name                 = "you@example.com"
+github_identity_client_id = "00000000-0000-0000-0000-000000000000" # from infra/app output, or "" to skip
