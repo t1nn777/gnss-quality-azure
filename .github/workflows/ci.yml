@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            api/requirements*.txt
+            ui/requirements.txt
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r api/requirements-dev.txt -r ui/requirements.txt
+
+      - name: Test
+        run: pytest -q
+
+      - name: UI compiles
+        run: python -m py_compile ui/app.py
