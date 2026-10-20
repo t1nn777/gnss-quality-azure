@@ -20,7 +20,15 @@ terraform {
 }
 
 provider "azurerm" {
-  features {}
+  features {
+    # Application Insights makes Azure create an "Application Insights Smart Detection"
+    # action group in rg-gnss-app that Terraform does not manage; without this,
+    # destroy fails on "the Resource Group still contains Resources". rg-gnss-app
+    # belongs to this stack only, so anything left in it is safe to delete.
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
   subscription_id = var.subscription_id
   # Do not auto-register dozens of resource providers (hangs on student subscriptions;
   # CI only has Reader). The few this project needs are registered once, see README.

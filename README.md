@@ -275,6 +275,13 @@ What happens to GitHub:
   `DATABRICKS_CATALOG` before running the job.
 
 If a script stops halfway, fix the cause and run it again; Terraform picks up where it left off.
+If it was killed mid-run and the next run reports a state lock, release it with
+`terraform -chdir=infra/app force-unlock <LOCK_ID>` (the ID is in the error).
+
+Application Insights makes Azure add an "Application Insights Smart Detection" action group to
+`rg-gnss-app` that Terraform does not manage. infra/app sets the azurerm provider's
+`prevent_deletion_if_contains_resources = false` so destroy deletes it with the resource group;
+the flip side is that anything you create by hand in `rg-gnss-app` is deleted too.
 
 ### Observability
 

@@ -15,9 +15,16 @@ function Write-Step([string]$Message) {
 
 function Invoke-Native {
     # Runs a native command and stops the script on a non-zero exit code.
+    # When the script's output is redirected (e.g. *>&1), Windows PowerShell 5.1 wraps every
+    # stderr line of a native command in an ErrorRecord, which 'Stop' turns into a terminating
+    # NativeCommandError: terraform would be killed mid-run (stale state lock, orphan provider).
+    # So stderr is never fatal here; only the exit code decides.
     param([string]$Exe, [string[]]$Arguments)
+    $ErrorActionPreference = 'Continue'
     & $Exe @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "$Exe $($Arguments -join ' ') failed (exit $LASTEXITCODE)" }
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = 'Stop'
+    if ($code -ne 0) { throw "$Exe $($Arguments -join ' ') failed (exit $code)" }
 }
 
 function Assert-Tools([bool]$NeedGitHub) {
@@ -56,7 +63,9 @@ function Initialize-Stack([string]$Stack) {
 }
 
 function Get-StackOutputs([string]$Stack) {
+    $ErrorActionPreference = 'Continue'
     $json = terraform "-chdir=$($Stacks[$Stack])" output -json
+    $ErrorActionPreference = 'Stop'
     if ($LASTEXITCODE -ne 0) { throw "terraform output failed for infra/$Stack" }
     return ($json -join "`n") | ConvertFrom-Json
 }

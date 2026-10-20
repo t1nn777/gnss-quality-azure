@@ -51,5 +51,5 @@ if (-not $SkipGitHub) {
 }
 
 Write-Step 'Resource groups still tagged project=gnss-quality-azure'
-az group list --tag project=gnss-quality-azure --query '[].name' -o tsv
+Invoke-Native az @('group', 'list', '--tag', 'project=gnss-quality-azure', '--query', '[].name', '-o', 'tsv')
 Write-Host '(rg-gnss-tfstate is expected: it holds the Terraform state for up.ps1.)'
